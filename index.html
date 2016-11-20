@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html ng-app="listaTelefonica">
+<head>
+    <title>Lista Telefonica</title>
+    <link rel="stylesheet" type="text/css" href="bootstrap/bootstrap.css">
+    <style>
+        .jumbotron {
+            width: 600px;
+            text-align: center;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .table {
+            margin-top: 20px;
+        }
+        .form-control {
+            margin-bottom: 5px;
+        }
+        .selecionado {
+            background-color: yellow;
+        }
+        .negrito {
+            font-weight: bold;
+        }
+    </style>
+    <script src="lib/angular.js"></script>
+   <script src="bower_components/angular-messages/angular-messages.js"></script>
+   <script src="bower_components/angular-i18n/angular-locale_pt-br.js"></script>
+    <script>
+        angular.module("listaTelefonica", ["ngMessages"]);
+        angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope) {
+            $scope.app = "Lista Telefonica";
+            $scope.contatos = [
+                {nome: "Pedro", telefone: "9999-8888", data: new Date(), operadora: {nome: "Tim"},  cor: "blue"},
+                {nome: "Ana", telefone: "9999-8877", data: new Date(), operadora: {nome: "Oi"}, cor: "yellow"},
+                {nome: "Maria", telefone: "9999-8866",  data: new Date(), operadora: {nome: "Vivo"}, cor: "red"}
+            ];
+
+            $scope.operadoras = [
+              {nome: "Oi", codigo: 14, categoria: "celular", preco: 2},
+              {nome: "Claro", codigo: 15, categoria: "celular", preco: 1},
+              {nome: "Tim", codigo: 41, categoria: "celular", preco:3 },
+              {nome: "GVT", codigo: 20, categoria: "fixo", preco: 2},
+              {nome: "Embratel", codigo: 21, categoria: "fixo", preco:1.5}
+            ];
+
+            $scope.classe1 = "selecionado";
+            $scope.classe2 = "negrito";
+
+            $scope.acidicionarContato = function (novoContato) {
+                $scope.contatos.push(angular.copy(novoContato));
+                delete $scope.novoContato;
+                $scope.contatoForm.$setPristine(); //Define novamente o formulario como intocado
+            };
+
+            $scope.apagarContatos = function(contatos) {
+                $scope.contatos = contatos.filter(function(contato) {
+                    if(!contato.selecionado) return contato;
+                });
+            };
+
+            $scope.isContatoSelecionado = function(contatos) {
+                return contatos.some(function(contato) {
+                    return contato.selecionado;
+                });
+                
+                //console.log(isContatoSelecionado);
+                
+            };
+
+            $scope.ordernarPor = function(criterio){
+                $scope.criterioDeOrdenacao = criterio;
+                $scope.direcaoDaOrdenacao = !$scope.direcaoDaOrdenacao;
+            };
+        });
+
+    </script>
+</head>
+<body ng-controller="listaTelefonicaCtrl">
+<div class="jumbotron">
+    <h4 ng-bind="app"></h4>
+    {{contatos}}
+    <input type="text" class="form-control" ng-model="criterioDeBusca" placeholder="O que você busca?" />
+    <table ng-show="contatos.length > 0" class="table">
+        <tr>
+            <th></th>
+            <th><a href="" ng-click="ordernarPor('nome')" > Nome </a></th>
+            <th><a href="" ng-click="ordernarPor('telefone')" >Telefone</a></th>
+            <th>Operadora</th>
+            <th>Data</th>
+            <th>Cor</th>
+        </tr>
+        <tr ng-class="{'selecionado negrito': contato.selecionado}" 
+            ng-repeat="contato in contatos | filter:{nome:criterioDeBusca} | orderBy:criterioDeOrdenacao:direcaoDaOrdenacao">
+                <td><input type="checkbox" ng-model="contato.selecionado"/></td>
+                <td>{{contato.nome | uppercase}}</td>
+                <td>{{contato.telefone}}</td>
+                <td>{{contato.operadora.nome| lowercase}}</td>
+                <td>{{contato.data | date:'dd/MM/yyyy HH:MM'}}</td>
+                <td><div style="width:20px; height:20px;" ng-style="{'background-color': contato.cor}"></div></td>
+        </tr>
+    </table>
+    {{novoContato}}
+    <hr>
+    O formulário é valido?: {{contatoForm.$valid}}</br>
+    O formulário é invalido?: {{contatoForm.$invalid}}</br>
+    <form name="contatoForm">
+        <input class="form-control" 
+                type="text" 
+                name="nome" 
+                ng-model="novoContato.nome" 
+                placeholder="nome" 
+                ng-minlength="10"
+                ng-required="true">
+        <input class="form-control" 
+                type="text" 
+                name="telefone" 
+                ng-model="novoContato.telefone" 
+                placeholder="telefone" 
+                ng-required="true"
+                ng-pattern="/^\d{4,5}-\d{4}$/" />
+        <select class="form-control" 
+                ng-model="novoContato.operadora" 
+                ng-options="operadora.nome  + ' ('+ (operadora.preco | currency) + ')' group by operadora.categoria for operadora in operadoras | orderBy: 'nome'">
+                    <option value="">Selecione uma operadora</option>
+        </select>
+        <button class="btn btn-primary btn-block" ng-click="acidicionarContato(novoContato)" 
+            ng-disabled="contatoForm.$invalid">Adicionar</button>
+        <button class="btn btn-danger btn-block" ng-click="apagarContatos(contatos)" 
+            ng-if="isContatoSelecionado(contatos)">Remover</button>
+    </form>
+    
+    <div ng-messages="contatoForm.nome.$error" class="alert alert-danger">
+        <div  ng-message="required">
+            Por favor, preencha o nome
+        </div>
+        <div ng-message="minlenght">
+            Por favor, preencha o nome
+        </div>
+        <div ng-message="required">
+            Por favor, preencha o telefone
+        </div>
+            <div ng-message="pattern">
+            O campo telefone deve ter o formato DDDD-DDDD.
+        </div>
+    </div>
+</div>
+<div ng-include="'rodape.html'"></div>
+
+</body>
+</html>
