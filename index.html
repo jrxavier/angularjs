@@ -32,9 +32,9 @@
         angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope) {
             $scope.app = "Lista Telefonica";
             $scope.contatos = [
-                {nome: "Pedro", telefone: "9999-8888", data: new Date(), operadora: {nome: "Tim"},  cor: "blue"},
-                {nome: "Ana", telefone: "9999-8877", data: new Date(), operadora: {nome: "Oi"}, cor: "yellow"},
-                {nome: "Maria", telefone: "9999-8866",  data: new Date(), operadora: {nome: "Vivo"}, cor: "red"}
+                {nome: "Pedro Jose", telefone: "9999-8888", data: new Date(), operadora: {nome: "Tim"},  cor: "blue"},
+                {nome: "Ana Rafaela", telefone: "9999-8877", data: new Date(), operadora: {nome: "Oi"}, cor: "yellow"},
+                {nome: "Maria Cecilia", telefone: "9999-8866",  data: new Date(), operadora: {nome: "Vivo"}, cor: "red"}
             ];
 
             $scope.operadoras = [
@@ -94,10 +94,10 @@
         <tr ng-class="{'selecionado negrito': contato.selecionado}" 
             ng-repeat="contato in contatos | filter:{nome:criterioDeBusca} | orderBy:criterioDeOrdenacao:direcaoDaOrdenacao">
                 <td><input type="checkbox" ng-model="contato.selecionado"/></td>
-                <td>{{contato.nome | uppercase}}</td>
+                <td>{{contato.nome | uppercase | limitTo:6}}</td>
                 <td>{{contato.telefone}}</td>
                 <td>{{contato.operadora.nome| lowercase}}</td>
-                <td>{{contato.data | date:'dd/MM/yyyy HH:MM'}}</td>
+                <td>{{contato.data | date:'MMMM EEE dd/MM/yyyy HH:MM'}}</td>
                 <td><div style="width:20px; height:20px;" ng-style="{'background-color': contato.cor}"></div></td>
         </tr>
     </table>
